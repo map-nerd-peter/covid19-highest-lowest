@@ -8,7 +8,7 @@ import datetime
 COVID-19 (Coronavirus) Plotting Tool to Identify Highest and Lowest Daily Case Values 
 for Countries, Regions, Provinces/States.
 
-Written by Peter C. (https://github.com/map-nerd-peter/covid19_highest_lowest)
+Written by Peter C. (https://github.com/map-nerd-peter/covid19-highest-lowest)
 
 """
 class Covid19Data:
