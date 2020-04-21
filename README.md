@@ -10,22 +10,26 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
 
 * ABBREVIATED Command used to obtain highest daily case value for province of Guangdong, China:
+
   `python covid19_highest_lowest.py -p Guangdong -u https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv -t Highest`
 
 
 * Command to obtain highest daily case value for country of Italy:
+
   `python covid19_highest_lowest.py -c Italy -u https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv -t highest`
 
 ![Italy1](example_plots/Italy_highest.png "Click to see enlarged Italy plot image")
 
 
-* Command to obtain LOWEST daily case value for country of Italy
+* Command to obtain LOWEST daily case value for country of Italy:
+
   `python covid19_highest_lowest.py -c Italy -u https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv -t lowest`
 
 ![Italy2](example_plots/Italy_lowest.png "Click to see enlarged Italy plot image")
 
 
 * For help/instructions:
+
   `python covid19_linear_plot.py -h`
 
 The above plots for Italy showed the highest daily COVID-19 cases on March 21, 2020 and this looks to be the peak of the first wave of COVID-19 infections.  The lowest daily cases was on April 20, 2020. If the lowest daily case number is located at the bottom of a V-shaped bar plot, this would indicate that there may be an additional COVID-19 wave underway in the country. As of April 20 2020, this is NOT THE CASE in Italy as the lowest value is not situated in a V-shaped bar plot so it's indicating a continual flattening of the curve.
