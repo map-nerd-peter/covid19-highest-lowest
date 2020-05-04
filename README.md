@@ -3,9 +3,7 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
 * This tool generates a bar plot of highest and lowest daily COVID-19 (SARS-CoV-2) cases, based on historical data from Johns Hopkins University. This tool is helpful for identifying the status of the study area in terms of the pandemic waves.  Typically, pandemics work through the human population in multiple waves.  The lowest value is useful indentifying a trough between waves, and the highest value is useful to identify the peak of the first wave of COVID-19 in a study area.
 
-* __EXAMPLES:__
-
-* __Command to obtain highest daily case value for province of Guangdong, China:__
+* __EXAMPLE: Command to obtain highest daily case value for province of Guangdong, China:__
 
   `python covid19_highest_lowest.py --province_state Guangdong --url https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv --type highest`
 
@@ -39,4 +37,6 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
 * The above plots for Italy showed the highest daily COVID-19 cases on March 21, 2020 and the curve resembles a Bell-curve so this looks to be the peak of the first wave of COVID-19 infections.  In the second Italy plot, the lowest daily cases was on April 20, 2020. If the lowest daily case number is located at the bottom of a V-shaped bar plot, this would indicate that there is a trough (bottom) between successive waves, so there may be an additional COVID-19 wave underway in the country. As of April 20 2020, this is NOT THE CASE in Italy as the lowest value is not located in a V-shaped bar plot so it's indicating a continual flattening of the curve.
 
-* __Software Requirements:__ Python 3 (on Windows, Mac, or Linux) and Python libraries numpy, matplotlib and Pandas.
+* __Software Requirements:__ 
+
+    Python 3 (on Windows, Mac, or Linux) and Python libraries numpy, matplotlib and Pandas.
