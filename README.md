@@ -7,7 +7,6 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
   `python covid19_highest_lowest.py --province_state Guangdong --url https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv --type highest`
 
-__(Click to view Enlarged Image):__
 ![Guangdong](example_plots/Guangdong_highest.png "Click to see enlarged plot image for province of Guangdong")
 
 
