@@ -1,7 +1,7 @@
 COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a Country, Region, Province or State
 ========================================================================================================================
 
-* This tool generates a bar plot of highest and lowest daily COVID-19 (SARS-CoV-2) cases, based on historical data from Johns Hopkins University. This tool is helpful for identifying the status of the study area in terms of the epidemic waves.  Typically, epidemic work through a community in multiple waves.  The lowest value is useful for indentifying a trough between COVID-19 infection waves, and the highest value is useful to identify the peak of the first wave of COVID-19 in a study area.
+* This tool generates a bar plot of highest and lowest daily COVID-19 (SARS-CoV-2) cases, based on historical data from Johns Hopkins University. This tool is helpful for identifying the status of the study area in terms of the epidemic waves.  Typically, an epidemic works through a community in multiple waves.  The lowest value is useful for indentifying a trough between COVID-19 infection waves, and the highest value is useful to identify the peak of the first wave of COVID-19 in a study area.
 
 * __EXAMPLE - Command to obtain highest daily case value for province of Guangdong, China:__
 
