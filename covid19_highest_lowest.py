@@ -88,6 +88,7 @@ class Covid19Data:
 
         #returns a named tuple with dates and confirmed daily_cases
         plot_data = collections.namedtuple('plot_data',['dates', 'daily_cases', 'label', 'alternate_label']) 
+        plot_data.alternate_label = ""
 
         max_value_location = -1
         #Reserved for alternate peak value
@@ -96,8 +97,6 @@ class Covid19Data:
         min_value_location = -1
         #For alternate min value
         alt_min_value_location = -1
-
-        plot_data.alternate_label = ""
 
         #Only used if there is an alternate max or alternate min value in the dataset
 
@@ -165,18 +164,18 @@ class Covid19Data:
 
         # Get minimum or trough value after a peak value. 
         elif plot_type == DataParameter.minimum:
+            
+            #Reset alternate label so that we only report minimum values.
             plot_data.alternate_label = ""
+
             #Find the min value in the rolling data
             min_rolling_data = self.csv_row_data.iloc[0,max_value_location:].diff().rolling(5, center=True).mean().round(3)
-            
-
-
+ 
             min_rolling_value = min_rolling_data.min()
             print('Min rolling value %.2f' %min_rolling_value)
 
             #Get column location of minimum value
             for date_index, value in min_rolling_data.items():
-
                 if value == min_rolling_value:
                     min_rolling_value_location = list(self.csv_row_data).index(date_index)
                     min_date = date_index
@@ -187,7 +186,7 @@ class Covid19Data:
 
             min_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:]
 
-            #The likely Minimum value of the epidemioliogical wave
+            #The likely Minimum value of the epidemiological wave
             min_value = min_series_data.min()
 
             #There may be alternate minimum value that is a result of quirks/daily revision of data reporting, we should still report this one.
@@ -220,11 +219,25 @@ class Covid19Data:
         return plot_data
 
     def get_location_and_date(self, value, DataParameter, data_series):
+        """
+        Get column location and date of infection case value.
+        Parameters
+        ----------
+        value : float
+            Case value
+        Returns
+        -------
+        value_location : int
+            Column location of the case value
+        date : string
+            Date of the case value
+        """
 
         #parameters: value, date, Pandas data Series,
         #Depending on DataParameter maximum or minimum, 
     
         for date_index, val in data_series.diff().items():
+
         
             if val == value:
                 value_location = list(self.csv_row_data).index(date_index)
@@ -232,10 +245,25 @@ class Covid19Data:
                 print('%s column loc and date: %s %s' %(DataParameter, value_location, date))
                 break
 
+
         return value_location, date
 
     def plot_bar_chart(self, plot_data):
-
+        """
+        Takes data to plot a bar chart 
+        Parameters
+        ----------
+        plot_data : named_tuple
+            plot_data contains Different components inside the named tuple
+        plot_data.dates : list
+            List of dates
+        plot_data.daily_cases : list
+            List of daily cases
+        plot_data.label : string
+            Label describing location and minimum or maximum value
+        plot_data.alternate_label : string
+            Label to report alternate maximum or minimum values
+        """
         if plot_data.dates is not None and plot_data.daily_cases is not None:
             plt.bar(plot_data.dates, height = plot_data.daily_cases) 
             plt.xticks(plot_data.dates, [self.get_date_label(d) for d in plot_data.dates])
