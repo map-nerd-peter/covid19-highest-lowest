@@ -108,18 +108,14 @@ class Covid19Data:
         print('Daily case numbers in the dataset: ')
         print(data.diff())
 
-        '''print('Rolling mean method of cells')
-        for date_index, value in data.diff().rolling(5, center=True).mean().items():
-            print('%s %.2f' %(date_index, value))'''
-
         rolling_data = data.diff().rolling(5, center=True).mean().round(3)
 
-        #We need to determine maximum based on rolling averaged values so we know the max value in the infection wave
-        max_rolling_value = rolling_data.max()
+        #Determine maximum based on rolling averaged values so we know the max value in infection wave. Only take positive and 0 values for max and alternate max values.
+        max_rolling_value = rolling_data.loc[lambda x : x>= 0].max()
         print('Max rolling value %.2f' %max_rolling_value)
 
         #There may be alternate max value that is a result of quirks or daily revision of data reporting, not the max value we want.
-        alt_max_value = data.diff().max()
+        alt_max_value = data.diff().loc[lambda x : x>= 0].max()
         print('Alt max value')
         print(alt_max_value)
 
@@ -138,7 +134,7 @@ class Covid19Data:
         max_series_data = self.csv_row_data.iloc[0,max_rolling_value_location-7:max_rolling_value_location+7].diff()
 
         #This is likely the true max value of the epidemioliogical wave
-        max_value = max_series_data.max()
+        max_value = max_series_data.loc[lambda x : x>= 0].max()
 
         # Get values for max value location, maximum date, alternate max value location, and alternate max date.
         max_value_location, max_date = self.get_location_and_date(max_value, DataParameter.maximum.name, data)
@@ -147,19 +143,26 @@ class Covid19Data:
 
         print('Testing to see if we have 2 different maximum values %d %d' %(max_value, alt_max_value))
 
+        duplicate_lines = 0
         if max_series_data.duplicated().any():
             for date, val in max_series_data.items():
                 if date != max_date and val == max_value:
+                    #Only have space to report 2 lines of duplicate max values.
+                    if duplicate_lines == 2:
+                        plot_data.alternate_label = plot_data.alternate_label + '\nAdditional Maximum Values were Detected!!'
+                        break
+                        
                     print('Duplicate Value Detected! This is also an Alternate max value: %s %d' %(date, val))
                     plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Maximum value detected on %s: %d cases' %(self.get_date_label(date), val)
+                    duplicate_lines +=1
 
         #if max_value == alt_max_value and max_date == alt_max_date:
         if max_value != alt_max_value and max_date != alt_max_date:
             plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Maximum value detected on %s: %d cases' %(self.get_date_label(alt_max_date), alt_max_value)
 
         if plot_type == DataParameter.maximum:
-            daily_cases = self.csv_row_data.iloc[0,max_value_location-4:max_value_location+4].diff()
-            daily_cases = daily_cases.iloc[1:8]
+            daily_cases = self.csv_row_data.iloc[0,max_value_location-8:max_value_location+8].diff()
+            daily_cases = daily_cases.iloc[1:16]
             label = 'Maximum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(max_date), max_value)
 
         # Get minimum or trough value after a peak value. 
@@ -170,13 +173,21 @@ class Covid19Data:
 
             #Find the min value in the rolling data
             min_rolling_data = self.csv_row_data.iloc[0,max_value_location:].diff().rolling(5, center=True).mean().round(3)
+            print(min_rolling_data)
+            #min_rolling_data = min_rolling_data.where(lambda x : x>=0)
+            #print(type(min_rolling_data))
+            
  
-            min_rolling_value = min_rolling_data.min()
+            min_rolling_value = min_rolling_data.loc[lambda x : x>= 0].min() #Is this data frame filter by >=0 eg min_rolling_data >=0
+            print(min_rolling_value)
+            #exit()
+            #df.loc[df['Budget'] > 0, 'Budget'].min()
+            #e.g. https://stackoverflow.com/questions/53719450/how-to-find-the-pandas-record-with-positive-value-closest-to-zero
             print('Min rolling value %.2f' %min_rolling_value)
 
             #Get column location of minimum value
             for date_index, value in min_rolling_data.items():
-                if value == min_rolling_value:
+                if value == min_rolling_value: 
                     min_rolling_value_location = list(self.csv_row_data).index(date_index)
                     min_date = date_index
                     print('Rolling Minimum column loc and dates: %s %s' %(min_rolling_value_location, min_date))
@@ -186,27 +197,35 @@ class Covid19Data:
 
             min_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:]
 
-            #The likely Minimum value of the epidemiological wave
-            min_value = min_series_data.min()
+            #The likely Minimum value of the epidemiological wave. Only taking positive values and 0 values for minimums.
+            min_value = min_series_data.loc[lambda x : x>= 0].min()
 
             #There may be alternate minimum value that is a result of quirks/daily revision of data reporting, we should still report this one.
-            alt_min_value = min_data.diff().min()
+            alt_min_value = min_data.diff().loc[lambda x : x>= 0].min()
+            print(alt_min_value)
 
             min_value_location, min_date = self.get_location_and_date(min_value, DataParameter.minimum.name, min_data)
 
             alt_min_value_location, alt_min_date  = self.get_location_and_date(alt_min_value, DataParameter.alt_minimum.name, min_data)
 
+            duplicate_lines = 0
             if min_series_data.duplicated().any():
                 for date, val in min_series_data.items():
                     if date != min_date and val == min_value:
+                        #Only have space to report 2 duplicate values
+                        if duplicate_lines == 2:
+                            plot_data.alternate_label = plot_data.alternate_label + '\nAdditional Minimum Values were detected!!'
+                            break
+
                         print('Duplicate Value Detected! This is also an Alternate Minimum value: %s %d' %(date, val))
                         plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Minimum value detected on %s: %d cases' %(self.get_date_label(date), val)
-
+                        duplicate_lines +=1
+            
             if min_value != alt_min_value and min_date != alt_min_date:
                 plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Minimum value detected on %s: %d cases' %(self.get_date_label(alt_min_date), alt_min_value)
             
-            daily_cases = self.csv_row_data.iloc[0,min_value_location-4:min_value_location+4].diff()
-            daily_cases = daily_cases.iloc[1:8]
+            daily_cases = self.csv_row_data.iloc[0,min_value_location-8:min_value_location+8].diff()
+            daily_cases = daily_cases.iloc[1:16]
             label = 'Minimum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(min_date), min_value)
 
         #Get corresponding day for each case value
