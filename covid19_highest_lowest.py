@@ -143,20 +143,21 @@ class Covid19Data:
 
         print('Testing to see if we have 2 different maximum values %d %d' %(max_value, alt_max_value))
 
+        #Report duplicate max values
         duplicate_lines = 0
         if max_series_data.duplicated().any():
             for date, val in max_series_data.items():
                 if date != max_date and val == max_value:
                     #Only have space to report 2 lines of duplicate max values.
                     if duplicate_lines == 2:
-                        plot_data.alternate_label = plot_data.alternate_label + '\nAdditional Maximum Values were Detected!!'
+                        plot_data.alternate_label = plot_data.alternate_label + '\nAdditional Alternate Maximum Values were Detected!!'
                         break
                         
                     print('Duplicate Value Detected! This is also an Alternate max value: %s %d' %(date, val))
                     plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Maximum value detected on %s: %d cases' %(self.get_date_label(date), val)
                     duplicate_lines +=1
 
-        #if max_value == alt_max_value and max_date == alt_max_date:
+        #Report alternate max value that's different from the max value
         if max_value != alt_max_value and max_date != alt_max_date:
             plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Maximum value detected on %s: %d cases' %(self.get_date_label(alt_max_date), alt_max_value)
 
@@ -165,7 +166,7 @@ class Covid19Data:
             daily_cases = daily_cases.iloc[1:16]
             label = 'Maximum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(max_date), max_value)
 
-        # Get minimum or trough value after a peak value. 
+        # Get minimum or trough value after a max (peak) value. 
         elif plot_type == DataParameter.minimum:
             
             #Reset alternate label so that we only report minimum values.
@@ -174,15 +175,8 @@ class Covid19Data:
             #Find the min value in the rolling data
             min_rolling_data = self.csv_row_data.iloc[0,max_value_location:].diff().rolling(5, center=True).mean().round(3)
             print(min_rolling_data)
-            #min_rolling_data = min_rolling_data.where(lambda x : x>=0)
-            #print(type(min_rolling_data))
-            
  
-            min_rolling_value = min_rolling_data.loc[lambda x : x>= 0].min() #Is this data frame filter by >=0 eg min_rolling_data >=0
-            print(min_rolling_value)
-            #exit()
-            #df.loc[df['Budget'] > 0, 'Budget'].min()
-            #e.g. https://stackoverflow.com/questions/53719450/how-to-find-the-pandas-record-with-positive-value-closest-to-zero
+            min_rolling_value = min_rolling_data.loc[lambda x : x>= 0].min()
             print('Min rolling value %.2f' %min_rolling_value)
 
             #Get column location of minimum value
@@ -208,19 +202,21 @@ class Covid19Data:
 
             alt_min_value_location, alt_min_date  = self.get_location_and_date(alt_min_value, DataParameter.alt_minimum.name, min_data)
 
+            #Report duplicate minimum values
             duplicate_lines = 0
             if min_series_data.duplicated().any():
                 for date, val in min_series_data.items():
                     if date != min_date and val == min_value:
                         #Only have space to report 2 duplicate values
                         if duplicate_lines == 2:
-                            plot_data.alternate_label = plot_data.alternate_label + '\nAdditional Minimum Values were detected!!'
+                            plot_data.alternate_label = plot_data.alternate_label + '\nAdditional Alternate Minimum Values were detected!!'
                             break
 
                         print('Duplicate Value Detected! This is also an Alternate Minimum value: %s %d' %(date, val))
                         plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Minimum value detected on %s: %d cases' %(self.get_date_label(date), val)
                         duplicate_lines +=1
             
+            #Report alternate minimum value
             if min_value != alt_min_value and min_date != alt_min_date:
                 plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Minimum value detected on %s: %d cases' %(self.get_date_label(alt_min_date), alt_min_value)
             
@@ -345,7 +341,6 @@ def main():
         elif args.type == 'lowest':
             results = covid_data.get_plot_data(DataParameter.minimum)
 
-        #url https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
         covid_data.plot_bar_chart(results)
 
 if __name__ == '__main__':
