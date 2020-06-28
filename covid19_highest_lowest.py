@@ -24,12 +24,14 @@ class DataParameter(Enum):
 class DataLocation(Enum):
     province_state = 1
     country_region = 2
+    world = 3
 
 class Covid19Data:
 
     def __init__(self, location, url, data_location):
-        """Constructor"""
 
+        #index location of world row index, only used when we want world total
+        self.world_row_index = -1
         self._location = location
         self._url = url
         #Tells us if we're dealing with country or province/state data:
@@ -45,6 +47,15 @@ class Covid19Data:
         #Get country data
         elif data_location == DataLocation.country_region:
             self._csv_row_data = df[df['Country/Region'] == location].groupby('Country/Region').sum()
+        
+        #World data
+        elif data_location == DataLocation.world:
+  
+            #Add a row at the bottom that has total global value 
+            df = df.append(df.sum(numeric_only=True), ignore_index=True)
+            
+            self.world_row_index = df.shape[0]-1
+            self._csv_row_data = df
 
         #For Outputting readable dates on bar plots
         if platform.system() == 'Windows':
@@ -98,12 +109,12 @@ class Covid19Data:
         #For alternate min value
         alt_min_value_location = -1
 
-        #Only used if there is an alternate max or alternate min value in the dataset
-
         if self.data_location == DataLocation.province_state:
             data = self.csv_row_data.iloc[0,4:]
         elif self.data_location == DataLocation.country_region:
             data = self.csv_row_data.iloc[0,2:]
+        elif self.data_location == DataLocation.world:
+            data = self.csv_row_data.iloc[self.world_row_index, 4:]
 
         print('Daily case numbers in the dataset: ')
         print(data.diff())
@@ -119,6 +130,7 @@ class Covid19Data:
         print('Alt max value')
         print(alt_max_value)
 
+       
         #Get column location of maximum value first
         for date_index, value in rolling_data.items():
 
@@ -130,8 +142,14 @@ class Covid19Data:
                 break
 
         #Take data subset for the max value and its epidemiological wave
-        print('Data subset containing max value:')        
-        max_series_data = self.csv_row_data.iloc[0,max_rolling_value_location-7:max_rolling_value_location+7].diff()
+        try:
+            if self.data_location == DataLocation.world and self.world_row_index > -1:
+                max_series_data = self.csv_row_data.iloc[self.world_row_index,max_rolling_value_location-7:max_rolling_value_location+7].diff()
+            else:
+                max_series_data = self.csv_row_data.iloc[0,max_rolling_value_location-7:max_rolling_value_location+7].diff()
+        except UnboundLocalError:
+            print('Maximum rolling data could not be found. This application is exiting because it could not plot the data!')
+            exit()
 
         #This is likely the true max value of the epidemioliogical wave
         max_value = max_series_data.loc[lambda x : x>= 0].max()
@@ -161,8 +179,13 @@ class Covid19Data:
         if max_value != alt_max_value and max_date != alt_max_date:
             plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Maximum value detected on %s: %d cases' %(self.get_date_label(alt_max_date), alt_max_value)
 
-        if plot_type == DataParameter.maximum:
-            daily_cases = self.csv_row_data.iloc[0,max_value_location-8:max_value_location+8].diff()
+        if plot_type == DataParameter.maximum and self.world_row_index > -1:
+            daily_cases = self.csv_row_data.iloc[self.world_row_index,max_value_location-8:max_value_location+8].diff()
+            daily_cases = daily_cases.iloc[1:16]
+            label = 'Maximum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(max_date), max_value)
+        
+        elif plot_type == DataParameter.maximum and self.world_row_index == -1:
+            daily_cases = self.csv_row_data.iloc[0, max_value_location-8:max_value_location+8].diff()
             daily_cases = daily_cases.iloc[1:16]
             label = 'Maximum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(max_date), max_value)
 
@@ -170,15 +193,20 @@ class Covid19Data:
         elif plot_type == DataParameter.minimum:
             
             #Reset alternate label so that we only report minimum values.
-            plot_data.alternate_label = ""
+            plot_data.alternate_label = ''
 
             #Find the min value in the rolling data
-            min_rolling_data = self.csv_row_data.iloc[0,max_value_location:].diff().rolling(5, center=True).mean().round(3)
-            print(min_rolling_data)
+            if self.data_location == DataLocation.world and self.world_row_index > -1:
+                min_rolling_data = self.csv_row_data.iloc[self.world_row_index, max_value_location:].diff().rolling(5, center=True).mean().round(3)
+            else:
+                min_rolling_data = self.csv_row_data.iloc[0,max_value_location:].diff().rolling(5, center=True).mean().round(3)
+                print(min_rolling_data)
  
             min_rolling_value = min_rolling_data.loc[lambda x : x>= 0].min()
             print('Min rolling value %.2f' %min_rolling_value)
 
+            #min_rolling_value_location = None
+            
             #Get column location of minimum value
             for date_index, value in min_rolling_data.items():
                 if value == min_rolling_value: 
@@ -186,10 +214,17 @@ class Covid19Data:
                     min_date = date_index
                     print('Rolling Minimum column loc and dates: %s %s' %(min_rolling_value_location, min_date))
                     break
-
-            min_series_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:min_rolling_value_location+7].diff()
-
-            min_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:]
+            
+            try:
+                if self.data_location == DataLocation.world and self.world_row_index > -1:
+                    min_series_data = self.csv_row_data.iloc[self.world_row_index,min_rolling_value_location-7:min_rolling_value_location+7].diff() 
+                    min_data = self.csv_row_data.iloc[self.world_row_index,min_rolling_value_location-7:]
+                else:
+                    min_series_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:min_rolling_value_location+7].diff()
+                    min_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:]
+            except UnboundLocalError:
+                print('Minimum rolling data could not be found. This application is exiting because it could not plot the data!')
+                exit()
 
             #The likely Minimum value of the epidemiological wave. Only taking positive values and 0 values for minimums.
             min_value = min_series_data.loc[lambda x : x>= 0].min()
@@ -220,8 +255,13 @@ class Covid19Data:
             if min_value != alt_min_value and min_date != alt_min_date:
                 plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Minimum value detected on %s: %d cases' %(self.get_date_label(alt_min_date), alt_min_value)
             
-            daily_cases = self.csv_row_data.iloc[0,min_value_location-8:min_value_location+8].diff()
-            daily_cases = daily_cases.iloc[1:16]
+            if self.data_location == DataLocation.world and self.world_row_index > -1:
+                daily_cases = self.csv_row_data.iloc[self.world_row_index,min_value_location-8:min_value_location+8].diff()
+                daily_cases = daily_cases.iloc[1:16]
+            else:
+                daily_cases = self.csv_row_data.iloc[0,min_value_location-8:min_value_location+8].diff()
+                daily_cases = daily_cases.iloc[1:16]
+            
             label = 'Minimum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(min_date), min_value)
 
         #Get corresponding day for each case value
@@ -240,6 +280,10 @@ class Covid19Data:
         ----------
         value : float
             Case value
+        DataParemter : enum
+            Maximum or Minimum
+        data_series : Pandas data Series
+            row of data as Pandas data series
         Returns
         -------
         value_location : int
@@ -247,9 +291,6 @@ class Covid19Data:
         date : string
             Date of the case value
         """
-
-        #parameters: value, date, Pandas data Series,
-        #Depending on DataParameter maximum or minimum, 
     
         for date_index, val in data_series.diff().items():
 
@@ -281,9 +322,10 @@ class Covid19Data:
         """
         if plot_data.dates is not None and plot_data.daily_cases is not None:
             plt.bar(plot_data.dates, height = plot_data.daily_cases) 
-            plt.xticks(plot_data.dates, [self.get_date_label(d) for d in plot_data.dates])
+            plt.xticks(plot_data.dates, [self.get_date_label(d) for d in plot_data.dates], fontsize=8.5)
             plt.xlabel('Date')
             plt.ylabel('Number of New Cases')
+            plt.yticks(fontsize=8.5)
             for i, v in enumerate(plot_data.daily_cases):
                 plt.text(i, v, int(v), color='blue', ha='center') 
             if plot_data.alternate_label is not None:
@@ -303,6 +345,11 @@ def main():
                             '--country_region',
                             type=str,
                             help='Name of country or region to obtain the COVID-19 data')
+        parser.add_argument('-w',
+                            '--world',
+                            action='store_const',
+                            const = 'The World',
+                            help='The entire world')
         parser.add_argument('-u',
                             '--url',
                             type=str,
@@ -316,10 +363,10 @@ def main():
 
         args = parser.parse_args()
 
-        if not (args.province_state or args.country_region) and not (args.url and args.type):
-            print('Please provide a location (country or province_state), url of the Johns Hopkins COVID-19 data file, and the top of plot that you want (highest or lowest)')
+        if not (args.province_state or args.country_region or args.world) and not (args.url and args.type):
+            print('Please provide a location (country or province_state) or type w for the world, url of the Johns Hopkins COVID-19 data file, and the type of plot that you want (highest or lowest)')
             print('Instructions are available by typing: python covid19_highest_lowest.py --help')      
-            print('Example commands and more info available at https://github.com/map-nerd-peter/covid19_highest_lowest')
+            print('Example commands and info available at https://github.com/map-nerd-peter/covid19_highest_lowest')
             return
 
         if args.province_state:
@@ -328,7 +375,10 @@ def main():
         elif args.country_region:
             location = args.country_region
             data_location = DataLocation.country_region
-
+        elif args.world:
+            location = args.world
+            data_location = DataLocation.world
+            
         url = args.url
 
         covid_data = Covid19Data(location, url, data_location)
