@@ -55,7 +55,9 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
 * __Viewing the Plots on a Computer:__
 
-* The plots are rendered by the Matplotlib plotting library. Be sure to click on the "Maximize" button to see the plot with correct dimensions and font.
+* The plots are rendered by the Matplotlib plotting library. Be sure to click on the "Maximize" button at the top right corner to see the plot with correct dimensions and font.
+
+![Click on Maximize Plot Button](example_plots/Maximize_plot.png "Click to see enlarged plot image")
 
 * __Software Requirements:__ 
 
