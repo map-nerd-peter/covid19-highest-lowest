@@ -14,6 +14,16 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
   `python covid19_highest_lowest.py -p Guangdong -u https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv -t Highest`
 
+* __Command to obtain HIGHEST daily case value for the entire world:__
+
+  `python covid19_highest_lowest.py --world --url https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv --type highest`
+
+* __ABBREVIATED Command to obtain HIGHEST daily case value for the entire world:__
+
+  `python covid19_highest_lowest.py -w --url https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv --type highest`
+
+![World](example_plots/World_highest.png "Click to see enlarged plot image")
+
 
 * __Command to obtain highest daily case value for the country of Italy:__
 
@@ -42,6 +52,10 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 * This Python tool checks rolling values to detect the true high or low value in the wave of infection.  It can detect the alternate high or low of an infection wave, such as the alternate high infection value which occurred in the U.S. on April 24, 2020.  
 
 ![US1](example_plots/US_highest.png "Click to see enlarged US plot image")
+
+* __Viewing the Plots on a Computer:__
+
+* The plots are rendered by the Matplotlib plotting library. Be sure to click on the "Maximize" button to see the plot with correct dimensions and font.
 
 * __Software Requirements:__ 
 
