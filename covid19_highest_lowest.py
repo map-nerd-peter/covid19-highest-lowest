@@ -180,13 +180,13 @@ class Covid19Data:
             plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Maximum value detected on %s: %d cases' %(self.get_date_label(alt_max_date), alt_max_value)
 
         if plot_type == DataParameter.maximum and self.world_row_index > -1:
-            daily_cases = self.csv_row_data.iloc[self.world_row_index,max_value_location-8:max_value_location+8].diff()
-            daily_cases = daily_cases.iloc[1:16]
+            daily_cases = self.csv_row_data.iloc[self.world_row_index,max_value_location-7:max_value_location+7].diff()
+            daily_cases = daily_cases.iloc[1:14]
             label = 'Maximum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(max_date), max_value)
         
         elif plot_type == DataParameter.maximum and self.world_row_index == -1:
-            daily_cases = self.csv_row_data.iloc[0, max_value_location-8:max_value_location+8].diff()
-            daily_cases = daily_cases.iloc[1:16]
+            daily_cases = self.csv_row_data.iloc[0, max_value_location-7:max_value_location+7].diff()
+            daily_cases = daily_cases.iloc[1:14]
             label = 'Maximum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(max_date), max_value)
 
         # Get minimum or trough value after a max (peak) value. 
@@ -197,9 +197,10 @@ class Covid19Data:
 
             #Find the min value in the rolling data
             if self.data_location == DataLocation.world and self.world_row_index > -1:
-                min_rolling_data = self.csv_row_data.iloc[self.world_row_index, max_value_location:].diff().rolling(5, center=True).mean().round(3)
+                #We don't include the max_rolling_value_location
+                min_rolling_data = self.csv_row_data.iloc[self.world_row_index, max_rolling_value_location+1:].diff().rolling(5, center=True).mean().round(3)
             else:
-                min_rolling_data = self.csv_row_data.iloc[0,max_value_location:].diff().rolling(5, center=True).mean().round(3)
+                min_rolling_data = self.csv_row_data.iloc[0,max_rolling_value_location+1:].diff().rolling(5, center=True).mean().round(3)
                 print(min_rolling_data)
  
             min_rolling_value = min_rolling_data.loc[lambda x : x>= 0].min()
@@ -211,27 +212,28 @@ class Covid19Data:
             for date_index, value in min_rolling_data.items():
                 if value == min_rolling_value: 
                     min_rolling_value_location = list(self.csv_row_data).index(date_index)
-                    min_date = date_index
-                    print('Rolling Minimum column loc and dates: %s %s' %(min_rolling_value_location, min_date))
+                    min_rolling_date = date_index
+                    print('Rolling Minimum column loc and dates: %s %s' %(min_rolling_value_location, min_rolling_date))
                     break
             
             try:
                 if self.data_location == DataLocation.world and self.world_row_index > -1:
-                    min_series_data = self.csv_row_data.iloc[self.world_row_index,min_rolling_value_location-7:min_rolling_value_location+7].diff() 
+                    #Two week data slice with minimum rolling value in the middle of slice
+                    min_2_week_data = self.csv_row_data.iloc[self.world_row_index,min_rolling_value_location-7:min_rolling_value_location+7].diff() 
                     min_data = self.csv_row_data.iloc[self.world_row_index,min_rolling_value_location-7:]
                 else:
-                    min_series_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:min_rolling_value_location+7].diff()
+                    min_2_week_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:min_rolling_value_location+7].diff()
                     min_data = self.csv_row_data.iloc[0,min_rolling_value_location-7:]
             except UnboundLocalError:
                 print('Minimum rolling data could not be found. This application is exiting because it could not plot the data!')
                 exit()
 
             #The likely Minimum value of the epidemiological wave. Only taking positive values and 0 values for minimums.
-            min_value = min_series_data.loc[lambda x : x>= 0].min()
+            min_value = min_2_week_data.loc[lambda x : x>= 0].min()
 
             #There may be alternate minimum value that is a result of quirks/daily revision of data reporting, we should still report this one.
             alt_min_value = min_data.diff().loc[lambda x : x>= 0].min()
-            print(alt_min_value)
+            print('Alternate minimum value %d' %(alt_min_value))
 
             min_value_location, min_date = self.get_location_and_date(min_value, DataParameter.minimum.name, min_data)
 
@@ -239,8 +241,8 @@ class Covid19Data:
 
             #Report duplicate minimum values
             duplicate_lines = 0
-            if min_series_data.duplicated().any():
-                for date, val in min_series_data.items():
+            if min_2_week_data.duplicated().any():
+                for date, val in min_2_week_data.items():
                     if date != min_date and val == min_value:
                         #Only have space to report 2 duplicate values
                         if duplicate_lines == 2:
@@ -256,11 +258,11 @@ class Covid19Data:
                 plot_data.alternate_label = plot_data.alternate_label + '\nAlternate Minimum value detected on %s: %d cases' %(self.get_date_label(alt_min_date), alt_min_value)
             
             if self.data_location == DataLocation.world and self.world_row_index > -1:
-                daily_cases = self.csv_row_data.iloc[self.world_row_index,min_value_location-8:min_value_location+8].diff()
-                daily_cases = daily_cases.iloc[1:16]
+                daily_cases = self.csv_row_data.iloc[self.world_row_index,min_value_location-7:min_value_location+7].diff()
+                daily_cases = daily_cases.iloc[1:14]
             else:
-                daily_cases = self.csv_row_data.iloc[0,min_value_location-8:min_value_location+8].diff()
-                daily_cases = daily_cases.iloc[1:16]
+                daily_cases = self.csv_row_data.iloc[0,min_value_location-7:min_value_location+7].diff()
+                daily_cases = daily_cases.iloc[1:14]
             
             label = 'Minimum Value for Daily Cases on on %s: %d cases' %(self.get_date_label(min_date), min_value)
 
