@@ -12,7 +12,7 @@ COVID-19 (Coronavirus) Tool to Show Highest and Lowest Daily COVID-19 Cases in a
 
 * __ABBREVIATED Command used to obtain highest daily case value for province of Guangdong, China:__
 
-  `python covid19_highest_lowest.py -p Guangdong -u https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv -t Highest`
+  `python covid19_highest_lowest.py -p Guangdong -u https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv -t highest`
 
 * __Command to obtain HIGHEST daily case value for the entire world:__
 
